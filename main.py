@@ -6,16 +6,20 @@ class DebianNewsScraper:
         self.url = url
     
     def scrape(self):
-        response = requests.get(self.url)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, "html.parser")
-            content = soup.find(id="content")
-            paragraphs = content.find_all("p")
-            
-            news_items = [p.get_text() for p in paragraphs]
-            return "\n\n".join(news_items)
-        else:
-            raise Exception("Failed to retrieve Debian News")
+        try:
+            response = requests.get(self.url)
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            raise Exception("Failed to retrieve Debian News. Error: {}".format(e))
+        except requests.ConnectionError as e:
+            raise Exception("Failed to connect to the Debian News website. Error: {}".format(e))
+        
+        soup = BeautifulSoup(response.content, "html.parser")
+        content = soup.find(id="content")
+        paragraphs = content.find_all("p")
+        news_paragraphs = [p.get_text() for p in paragraphs]
+        
+        return "\n\n".join(news_paragraphs)
             
     def save(self, file_name):
         news = self.scrape()

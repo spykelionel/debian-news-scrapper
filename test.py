@@ -19,7 +19,7 @@ class TestDebianNewsScraper(unittest.TestCase):
             url = "https://wiki.debian.org/News"
             scraper = DebianNewsScraper(url)
             
-            file_name = "test_news.txt"
+            file_name = "test.log"
             scraper.save(file_name)
             
             # Verify that the file is created and contains the expected content

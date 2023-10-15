@@ -1,29 +1,30 @@
 import requests
 from bs4 import BeautifulSoup
 
-# URL of the Debian Wiki News page
-url = "https://wiki.debian.org/News"
-
-# Send a GET request to the URL
-response = requests.get(url)
-
-if response.status_code == 200:
-    # Parse the HTML content using BeautifulSoup
-    soup = BeautifulSoup(response.content, "html.parser")
-
-    # Find the content section of the page
-    content_section = soup.find(id="content")
-
-    # Find all the paragraphs within the content section
-    paragraphs = content_section.find_all("p")
-
-    # Create a Markdown file to write the content
-    with open("debian_news.md", "w", encoding="utf-8") as file:
-        for paragraph in paragraphs:
-            # Write each paragraph to the Markdown file
-            file.write(paragraph.get_text())
-            file.write("\n\n")
-
-    print("Debian News successfully written to debian_news.md.")
-else:
-    print("Failed to retrieve Debian News. Please check the URL or your internet connection.")
+class DebianNewsScraper:
+    def __init__(self, url):
+        self.url = url
+    
+    def scrape(self):
+        response = requests.get(self.url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, "html.parser")
+            content = soup.find(id="mw-content-text")
+            paragraphs = content.find_all("p")
+            
+            news_items = [p.get_text() for p in paragraphs]
+            return "\n\n".join(news_items)
+        else:
+            raise Exception("Failed to retrieve Debian News")
+            
+    def save(self, file_name):
+        news = self.scrape()
+        with open(file_name, "w") as f:
+            f.write(news)
+        
+if __name__ == "__main__":
+    url = "https://wiki.debian.org/News"
+    scraper = DebianNewsScraper(url)
+    file_name = "debian_news.md"
+    scraper.save(file_name)
+    print("Debian News saved to", file_name)
